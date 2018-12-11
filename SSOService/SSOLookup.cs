@@ -200,33 +200,36 @@ namespace SSOService
                 ldapConn.Connect(server, GetIntValue("S_ldap_ED_port")); 
                 ldapConn.Bind(GetStringValue("S_ldap_ED_bindName"), bindPwd);
 
-                LdapSearchResults search = ldapConn.Search(String.Empty, LdapConnection.SCOPE_SUB, 
-                    String.Format(GetStringValue("S_ldap_ED_userNameFrmt"), user.login_id), null, false);
-                if (search != null && search.Count > 0)
+                string userSearch = String.Format(GetStringValue("S_ldap_ED_userNameFrmt"), user.login_id);
+                string baseSearch = "";  // "ou=People,o=eaton.com";
+                LdapSearchResults search = ldapConn.Search(baseSearch, LdapConnection.SCOPE_SUB, userSearch, null, false);
+                if (search != null) // && search.Count > 0)
                 {
                     LdapEntry le = search.First<LdapEntry>();
-                    string name = le.DN;
-                    LdapAttributeSet set = le.getAttributeSet();
-                    if(set !=  null)
+                    if (le != null)
                     {
-                        IEnumerator ienum = set.GetEnumerator();
-                        while (ienum.MoveNext())
+                        string name = le.DN;
+                        LdapAttributeSet set = le.getAttributeSet();
+                        if (set != null)
                         {
-                            LdapAttribute attribute = (LdapAttribute)ienum.Current;
-                            string attributeName = attribute.Name;
-                            string attributeVal = attribute.StringValue;
+                            IEnumerator ienum = set.GetEnumerator();
+                            while (ienum.MoveNext())
+                            {
+                                LdapAttribute attribute = (LdapAttribute)ienum.Current;
+                                string attributeName = attribute.Name;
+                                string attributeVal = attribute.StringValue;
 
-                            if (String.Compare(attributeName, GetStringValue("S_ED_FirstName"), true) == 0)
-                                user.first_name = attributeVal;
-                            else if (String.Compare(attributeName, GetStringValue("S_ED_LastName"), true) == 0)
-                                user.last_name = attributeVal;
-                            else if (String.Compare(attributeName, GetStringValue("S_ED_Email"), true) == 0)
-                                user.email = attributeVal;
-                            else
-                                user.attributes.Add(attributeName, attributeVal);
+                                if (String.Compare(attributeName, GetStringValue("S_ED_FirstName"), true) == 0)
+                                    user.first_name = attributeVal;
+                                else if (String.Compare(attributeName, GetStringValue("S_ED_LastName"), true) == 0)
+                                    user.last_name = attributeVal;
+                                else if (String.Compare(attributeName, GetStringValue("S_ED_Email"), true) == 0)
+                                    user.email = attributeVal;
+                                else
+                                    user.attributes.Add(attributeName, attributeVal);
+                            }
                         }
                     }
-
                 }
             }
             catch (Exception ex)
