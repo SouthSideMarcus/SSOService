@@ -65,7 +65,10 @@ namespace SSOService.Controllers
                     worker.SearchUser(inputParams.GetEnvironment(), ref user);
                 }
 
-                return JsonConvert.SerializeObject(resp, Formatting.Indented);
+                //return JsonConvert.SerializeObject(resp, Formatting.Indented);
+                string rval = JsonConvert.SerializeObject(resp, Formatting.Indented);
+
+                return rval;
 
             }
             catch (Exception ex)
